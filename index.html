@@ -3,282 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoShorts Studio</title>
+    <title>AUTOSHORTS | PRO</title>
     <style>
-        :root { --primary: #00e5ff; --bg: #0a0a0a; --card: #1c1c1c; --text: #ffffff; --danger: #ff4757; }
+        :root { 
+            --bg: #050505; 
+            --panel: #111111; 
+            --border: #333333; 
+            --text-main: #e0e0e0; 
+            --text-dim: #666666; 
+            --accent: #ffffff; 
+            --error: #cf6679;
+        }
         
         body { 
             background-color: var(--bg); 
-            color: var(--text); 
-            font-family: 'Segoe UI', Roboto, sans-serif; 
+            color: var(--text-main); 
+            font-family: 'Helvetica Neue', Arial, sans-serif; 
             margin: 0; 
-            padding: 20px; 
+            padding: 40px 20px; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             min-height: 100vh;
+            letter-spacing: 0.5px;
         }
         
-        h2 { margin-top: 0; text-transform: uppercase; letter-spacing: 1.5px; font-size: 1.2rem; text-align: center;}
-        
-        .app-container { 
+        .interface { 
             width: 100%; 
-            max-width: 480px; 
-            background: var(--card); 
-            padding: 20px; 
-            border-radius: 20px; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6); 
+            max-width: 600px; 
+            border: 1px solid var(--border); 
+            background: var(--panel);
         }
 
-        /* --- SECTIONS --- */
-        .section-title { color: #888; font-size: 0.85rem; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; }
-        
-        .control-group { margin-bottom: 25px; border-bottom: 1px solid #333; padding-bottom: 25px; }
-        .control-group:last-child { border-bottom: none; }
+        /* HEADER */
+        header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h1 { margin: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; color: var(--accent); }
+        .status-dot { height: 8px; width: 8px; background-color: #333; border-radius: 50%; display: inline-block; }
+        .status-dot.active { background-color: var(--accent); box-shadow: 0 0 10px var(--accent); }
 
-        /* --- BUTTONS --- */
-        .btn { 
-            width: 100%; 
-            padding: 16px; 
-            border: none; 
-            border-radius: 12px; 
-            font-weight: 800; 
-            font-size: 1rem; 
-            cursor: pointer; 
-            transition: 0.2s; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 10px;
+        /* SECTIONS */
+        .section { padding: 0; border-bottom: 1px solid var(--border); }
+        .section:last-child { border-bottom: none; }
+        
+        .section-header {
+            padding: 15px 20px;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            font-weight: 600;
+            background: #0a0a0a;
+            border-bottom: 1px solid #222;
+            display: flex;
+            justify-content: space-between;
         }
 
-        .btn-add { background: #333; color: white; border: 2px dashed #555; }
-        .btn-add:active { background: #444; }
+        /* CONTROLS */
+        .control-row { padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         
-        .btn-audio { background: #333; color: #aaa; }
-        .btn-audio.has-file { background: #2e7d32; color: white; border: none; }
-
-        .btn-render { background: var(--primary); color: #000; text-transform: uppercase; margin-top: 10px;}
-        .btn-render:disabled { opacity: 0.5; cursor: not-allowed; }
-        
-        .btn-clear { background: transparent; color: var(--danger); font-size: 0.8rem; padding: 5px; width: auto; margin-left: auto; display: block; margin-top: 5px; cursor: pointer; border: none;}
-
-        /* --- LISTS --- */
-        .queue-list { 
-            list-style: none; 
-            padding: 0; 
-            margin: 10px 0 0 0; 
+        button {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 15px;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
         }
-        
-        .queue-item { 
-            background: #252525; 
-            padding: 12px; 
-            margin-bottom: 8px; 
-            border-radius: 8px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            font-size: 0.9rem;
-        }
-        
-        .queue-item span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 80%; }
-        .badge { background: #444; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; color: #aaa; }
+        button:hover { border-color: var(--accent); color: var(--accent); }
+        button:active { background: var(--accent); color: black; }
+        button:disabled { border-color: #222; color: #444; cursor: not-allowed; }
 
-        /* --- HIDDEN INPUTS --- */
+        .btn-primary { background: var(--accent); color: black; border: none; width: 100%; }
+        .btn-primary:hover { background: #ddd; }
+        
         input[type="file"] { display: none; }
         
-        select { 
-            width: 100%; 
-            padding: 14px; 
-            background: #252525; 
-            color: white; 
-            border: 1px solid #444; 
-            border-radius: 8px; 
-            font-size: 1rem; 
-            outline: none;
+        select {
+            width: 100%;
+            padding: 15px;
+            background: #0a0a0a;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            border-radius: 0;
+            font-size: 12px;
+            text-transform: uppercase;
+            appearance: none;
+            cursor: pointer;
         }
+        select:focus { outline: 1px solid var(--accent); }
 
-        /* --- STATES --- */
-        .loader { 
-            display: none;
-            width: 24px; 
-            height: 24px; 
-            border: 3px solid rgba(0,0,0,0.3); 
-            border-radius: 50%; 
-            border-top-color: #000; 
-            animation: spin 1s ease-in-out infinite; 
+        /* QUEUE LIST */
+        .queue-list { list-style: none; padding: 0; margin: 0; }
+        .queue-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #222;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .queue-item:last-child { border-bottom: none; }
+        .queue-meta { font-family: 'Courier New', monospace; font-size: 11px; color: var(--text-dim); }
 
-        .success-box { display: none; margin-top: 20px; text-align: center; }
-        .download-link { color: var(--primary); text-decoration: none; font-weight: bold; border-bottom: 1px solid var(--primary); }
+        /* AUDIO BAR */
+        .audio-bar {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 12px;
+        }
+        .audio-indicator { width: 4px; height: 15px; background: #333; }
+        .audio-indicator.active { background: var(--accent); }
+
+        /* OUTPUT */
+        #output-area { display: none; padding: 20px; text-align: center; background: #0f0f0f; }
+        .d-link { color: var(--text-main); text-decoration: none; border-bottom: 1px solid var(--accent); padding-bottom: 2px; font-size: 12px; text-transform: uppercase; }
 
     </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <h2>AutoShorts Studio</h2>
+    <div class="interface">
+        <header>
+            <h1>AutoShorts <span style="font-weight:300; opacity:0.5;">// STUDIO</span></h1>
+            <div class="status-dot" id="server-status"></div>
+        </header>
 
-        <div class="control-group">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div class="section-title">1. Visual Timeline (Order Matters)</div>
-                <button class="btn-clear" onclick="clearQueue()" id="clearBtn" style="display:none;">Clear All</button>
+        <div class="section">
+            <div class="section-header">
+                <span>01. Visual Sequence</span>
+                <span id="count-display">0 CLIPS</span>
             </div>
-            
-            <button class="btn btn-add" onclick="document.getElementById('videoInput').click()">
-                + Add Clip / Image
-            </button>
-            <input type="file" id="videoInput" accept="image/*,video/*" onchange="addToQueue(this)">
-            
             <ul class="queue-list" id="queueList">
-                </ul>
+                <li class="queue-item" style="color: #444; justify-content: center; font-style: italic;">
+                    No media selected
+                </li>
+            </ul>
+            <div class="control-row" style="grid-template-columns: 1fr auto;">
+                <button onclick="document.getElementById('vidInput').click()">+ Append Clip</button>
+                <button onclick="clearQueue()" style="border-color: #332222; color: #884444;">Reset</button>
+            </div>
+            <input type="file" id="vidInput" accept="image/*,video/*" onchange="addVisual(this)">
         </div>
 
-        <div class="control-group">
-            <div class="section-title">2. Audio Track (Optional)</div>
-            <button class="btn btn-audio" id="audioBtn" onclick="document.getElementById('audioInput').click()">
-                🎵 Select Background Music
-            </button>
-            <input type="file" id="audioInput" accept="audio/*" onchange="handleAudio(this)">
+        <div class="section">
+            <div class="section-header">02. Audio Track</div>
+            <div class="audio-bar">
+                <div class="audio-indicator" id="audio-dot"></div>
+                <span id="audio-name" style="color: #666;">NO AUDIO SOURCE</span>
+                <button onclick="document.getElementById('audInput').click()" style="margin-left: auto; padding: 8px 15px;">Select File</button>
+            </div>
+            <input type="file" id="audInput" accept="audio/*" onchange="setAudio(this)">
         </div>
 
-        <div class="control-group">
-            <div class="section-title">3. Style</div>
-            <select id="transition">
-                <option value="Split">Barn Door Split (Sleek)</option>
-                <option value="Cut">Hard Cut (Fast)</option>
-            </select>
+        <div class="section">
+            <div class="section-header">03. Rendering Parameters</div>
+            <div class="control-row">
+                <select id="transition">
+                    <option value="Split_BarnDoor">Split: Barn Door (H)</option>
+                    <option value="Split_Quad">Split: Quad Grid</option>
+                    <option value="Split_Diagonal">Split: Diagonal Slice</option>
+                    <option value="Cellular_Growth">Mask: Cellular Growth</option>
+                    <option value="Dissolve_Luma">Mask: Luma Fade</option>
+                    <option value="Slide_Push">Slide: Kinetic Push</option>
+                </select>
+                <button class="btn-primary" id="renderBtn" onclick="processJob()">INITIATE RENDER</button>
+            </div>
         </div>
-
-        <button class="btn btn-render" id="renderBtn" onclick="submitJob()">
-            <div class="loader" id="loader"></div>
-            <span id="btnText">GENERATE SHORT</span>
-        </button>
-
-        <div id="status" style="margin-top:15px; text-align:center; font-size:0.9rem; color:#888;"></div>
-
-        <div class="success-box" id="successBox">
-            <p>✅ <b>Done!</b></p>
-            <a href="#" id="downloadLink" class="btn btn-add" style="background:#2e7d32; border:none; color:white;" download="Short.mp4">
-                Download Video
-            </a>
+        
+        <div id="output-area">
+            <p id="status-text" style="font-size: 11px; margin-bottom: 15px; color: #666;">PROCESSING...</p>
+            <a id="dl-link" class="d-link" href="#" download>Download Final_Render.mp4</a>
         </div>
     </div>
 
     <script>
-        // --- CONFIGURATION ---
-        const API_URL = "https://texmexdex-auto-shorts.hf.space/render"; 
+        const API_URL = "https://texmexdex-auto-shorts.hf.space/render"; // VERIFY THIS URL
         
-        // --- STATE MANAGEMENT ---
-        let visualQueue = []; // Stores the actual File objects
+        let visualQueue = [];
         let audioFile = null;
 
-        // --- FUNCTIONS ---
-
-        function addToQueue(input) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                visualQueue.push(file);
-                renderQueueUI();
+        function addVisual(input) {
+            if(input.files[0]) {
+                visualQueue.push(input.files[0]);
+                renderList();
+                input.value = "";
             }
-            // Reset input so you can select the same file again if needed
-            input.value = '';
         }
 
-        function renderQueueUI() {
+        function renderList() {
             const list = document.getElementById('queueList');
-            const clearBtn = document.getElementById('clearBtn');
-            list.innerHTML = '';
+            const count = document.getElementById('count-display');
+            list.innerHTML = "";
+            
+            if(visualQueue.length === 0) {
+                list.innerHTML = '<li class="queue-item" style="color:#444; justify-content:center;">No media selected</li>';
+            } else {
+                visualQueue.forEach((file, i) => {
+                    const li = document.createElement('li');
+                    li.className = 'queue-item';
+                    li.innerHTML = `
+                        <span>${i+1}. ${file.name}</span>
+                        <span class="queue-meta">${(file.size/1024/1024).toFixed(1)}MB</span>
+                    `;
+                    list.appendChild(li);
+                });
+            }
+            count.innerText = visualQueue.length + " CLIPS";
+        }
 
-            visualQueue.forEach((file, index) => {
-                const li = document.createElement('li');
-                li.className = 'queue-item';
-                
-                // Determine icon based on type
-                const icon = file.type.startsWith('image') ? '📷' : '🎥';
-                
-                li.innerHTML = `
-                    <span>${index + 1}. ${icon} ${file.name}</span>
-                    <span class="badge">${(file.size / 1024 / 1024).toFixed(1)} MB</span>
-                `;
-                list.appendChild(li);
-            });
-
-            clearBtn.style.display = visualQueue.length > 0 ? 'block' : 'none';
+        function setAudio(input) {
+            if(input.files[0]) {
+                audioFile = input.files[0];
+                document.getElementById('audio-name').innerText = audioFile.name.toUpperCase();
+                document.getElementById('audio-name').style.color = "#e0e0e0";
+                document.getElementById('audio-dot').classList.add('active');
+            }
         }
 
         function clearQueue() {
             visualQueue = [];
-            renderQueueUI();
+            renderList();
         }
 
-        function handleAudio(input) {
-            const btn = document.getElementById('audioBtn');
-            if (input.files && input.files[0]) {
-                audioFile = input.files[0];
-                btn.innerHTML = `🎵 ${audioFile.name}`;
-                btn.classList.add('has-file');
-            }
-        }
-
-        async function submitJob() {
-            if (visualQueue.length === 0) {
-                alert("Please add at least one video or image first.");
-                return;
-            }
+        async function processJob() {
+            if(visualQueue.length < 1) return alert("SEQUENCE EMPTY");
 
             const btn = document.getElementById('renderBtn');
-            const btnText = document.getElementById('btnText');
-            const loader = document.getElementById('loader');
-            const status = document.getElementById('status');
-            const successBox = document.getElementById('successBox');
+            const out = document.getElementById('output-area');
+            const status = document.getElementById('status-text');
+            const link = document.getElementById('dl-link');
 
-            // UI Loading State
             btn.disabled = true;
-            btnText.innerText = " PROCESSING...";
-            loader.style.display = "block";
-            successBox.style.display = "none";
-            status.innerText = "Uploading files & Rendering on Server...";
+            btn.innerText = "RENDERING...";
+            out.style.display = "block";
+            link.style.display = "none";
+            status.innerText = "UPLOADING ASSETS & PROCESSING...";
 
             const formData = new FormData();
-
-            // 1. Append Visuals (Order is preserved by array order)
-            visualQueue.forEach(file => {
-                formData.append('files', file);
-            });
-
-            // 2. Append Audio
-            if (audioFile) {
-                formData.append('audio_file', audioFile);
-            }
-
-            // 3. Append Settings
+            visualQueue.forEach(f => formData.append('files', f));
+            if(audioFile) formData.append('audio_file', audioFile);
             formData.append('transition', document.getElementById('transition').value);
 
             try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    throw new Error("Server Error. Check file sizes or format.");
-                }
-
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
+                const res = await fetch(API_URL, { method: 'POST', body: formData });
+                if(!res.ok) throw new Error("RENDER FAILED");
                 
-                document.getElementById('downloadLink').href = url;
-                successBox.style.display = "block";
-                status.innerText = "";
-                
-            } catch (error) {
-                status.innerText = "Error: " + error.message;
+                const blob = await res.blob();
+                link.href = window.URL.createObjectURL(blob);
+                link.style.display = "inline";
+                status.innerText = "RENDER COMPLETE";
+            } catch (e) {
+                status.innerText = "ERROR: " + e.message;
             } finally {
                 btn.disabled = false;
-                btnText.innerText = "GENERATE SHORT";
-                loader.style.display = "none";
+                btn.innerText = "INITIATE RENDER";
             }
         }
     </script>
