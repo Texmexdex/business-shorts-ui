@@ -1,78 +1,259 @@
-<form id="uploadForm">
-            <label>1. Upload Visuals (Order Matters)</label>
-            <label for="files" class="file-upload" id="drop-zone">
-                Tap to Select Images/Videos
-            </label>
-            <input type="file" id="files" multiple accept="image/*,video/*" onchange="updateCount()">
-            
-            <label>2. Background Audio (Optional)</label>
-            <label for="audio" class="file-upload" id="audio-zone" style="padding: 15px; margin-bottom: 20px;">
-                Tap to Select Music/Voiceover
-            </label>
-            <input type="file" id="audio" accept="audio/*" onchange="updateAudioCount()">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoShorts Studio</title>
+    <style>
+        :root { --primary: #00e5ff; --bg: #0a0a0a; --card: #1c1c1c; --text: #ffffff; --danger: #ff4757; }
+        
+        body { 
+            background-color: var(--bg); 
+            color: var(--text); 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh;
+        }
+        
+        h2 { margin-top: 0; text-transform: uppercase; letter-spacing: 1.5px; font-size: 1.2rem; text-align: center;}
+        
+        .app-container { 
+            width: 100%; 
+            max-width: 480px; 
+            background: var(--card); 
+            padding: 20px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6); 
+        }
 
-            <label>3. Transition Style</label>
+        /* --- SECTIONS --- */
+        .section-title { color: #888; font-size: 0.85rem; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; }
+        
+        .control-group { margin-bottom: 25px; border-bottom: 1px solid #333; padding-bottom: 25px; }
+        .control-group:last-child { border-bottom: none; }
+
+        /* --- BUTTONS --- */
+        .btn { 
+            width: 100%; 
+            padding: 16px; 
+            border: none; 
+            border-radius: 12px; 
+            font-weight: 800; 
+            font-size: 1rem; 
+            cursor: pointer; 
+            transition: 0.2s; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px;
+        }
+
+        .btn-add { background: #333; color: white; border: 2px dashed #555; }
+        .btn-add:active { background: #444; }
+        
+        .btn-audio { background: #333; color: #aaa; }
+        .btn-audio.has-file { background: #2e7d32; color: white; border: none; }
+
+        .btn-render { background: var(--primary); color: #000; text-transform: uppercase; margin-top: 10px;}
+        .btn-render:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .btn-clear { background: transparent; color: var(--danger); font-size: 0.8rem; padding: 5px; width: auto; margin-left: auto; display: block; margin-top: 5px; cursor: pointer; border: none;}
+
+        /* --- LISTS --- */
+        .queue-list { 
+            list-style: none; 
+            padding: 0; 
+            margin: 10px 0 0 0; 
+        }
+        
+        .queue-item { 
+            background: #252525; 
+            padding: 12px; 
+            margin-bottom: 8px; 
+            border-radius: 8px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            font-size: 0.9rem;
+        }
+        
+        .queue-item span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 80%; }
+        .badge { background: #444; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; color: #aaa; }
+
+        /* --- HIDDEN INPUTS --- */
+        input[type="file"] { display: none; }
+        
+        select { 
+            width: 100%; 
+            padding: 14px; 
+            background: #252525; 
+            color: white; 
+            border: 1px solid #444; 
+            border-radius: 8px; 
+            font-size: 1rem; 
+            outline: none;
+        }
+
+        /* --- STATES --- */
+        .loader { 
+            display: none;
+            width: 24px; 
+            height: 24px; 
+            border: 3px solid rgba(0,0,0,0.3); 
+            border-radius: 50%; 
+            border-top-color: #000; 
+            animation: spin 1s ease-in-out infinite; 
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .success-box { display: none; margin-top: 20px; text-align: center; }
+        .download-link { color: var(--primary); text-decoration: none; font-weight: bold; border-bottom: 1px solid var(--primary); }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <h2>AutoShorts Studio</h2>
+
+        <div class="control-group">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div class="section-title">1. Visual Timeline (Order Matters)</div>
+                <button class="btn-clear" onclick="clearQueue()" id="clearBtn" style="display:none;">Clear All</button>
+            </div>
+            
+            <button class="btn btn-add" onclick="document.getElementById('videoInput').click()">
+                + Add Clip / Image
+            </button>
+            <input type="file" id="videoInput" accept="image/*,video/*" onchange="addToQueue(this)">
+            
+            <ul class="queue-list" id="queueList">
+                </ul>
+        </div>
+
+        <div class="control-group">
+            <div class="section-title">2. Audio Track (Optional)</div>
+            <button class="btn btn-audio" id="audioBtn" onclick="document.getElementById('audioInput').click()">
+                🎵 Select Background Music
+            </button>
+            <input type="file" id="audioInput" accept="audio/*" onchange="handleAudio(this)">
+        </div>
+
+        <div class="control-group">
+            <div class="section-title">3. Style</div>
             <select id="transition">
                 <option value="Split">Barn Door Split (Sleek)</option>
-                <option value="Cut">Hard Cut</option>
+                <option value="Cut">Hard Cut (Fast)</option>
             </select>
+        </div>
 
-            <button type="submit" id="submitBtn">Generate Video</button>
-        </form>
+        <button class="btn btn-render" id="renderBtn" onclick="submitJob()">
+            <div class="loader" id="loader"></div>
+            <span id="btnText">GENERATE SHORT</span>
+        </button>
 
-<script>
+        <div id="status" style="margin-top:15px; text-align:center; font-size:0.9rem; color:#888;"></div>
+
+        <div class="success-box" id="successBox">
+            <p>✅ <b>Done!</b></p>
+            <a href="#" id="downloadLink" class="btn btn-add" style="background:#2e7d32; border:none; color:white;" download="Short.mp4">
+                Download Video
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
         const API_URL = "https://texmexdex-auto-shorts.hf.space/render"; 
+        
+        // --- STATE MANAGEMENT ---
+        let visualQueue = []; // Stores the actual File objects
+        let audioFile = null;
 
-        const fileInput = document.getElementById('files');
-        const audioInput = document.getElementById('audio');
-        const dropZone = document.getElementById('drop-zone');
-        const audioZone = document.getElementById('audio-zone');
+        // --- FUNCTIONS ---
 
-        function updateCount() {
-            if(fileInput.files.length > 0) {
-                dropZone.innerText = fileInput.files.length + " visuals selected";
-                dropZone.style.borderColor = "#00ff9d";
+        function addToQueue(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                visualQueue.push(file);
+                renderQueueUI();
+            }
+            // Reset input so you can select the same file again if needed
+            input.value = '';
+        }
+
+        function renderQueueUI() {
+            const list = document.getElementById('queueList');
+            const clearBtn = document.getElementById('clearBtn');
+            list.innerHTML = '';
+
+            visualQueue.forEach((file, index) => {
+                const li = document.createElement('li');
+                li.className = 'queue-item';
+                
+                // Determine icon based on type
+                const icon = file.type.startsWith('image') ? '📷' : '🎥';
+                
+                li.innerHTML = `
+                    <span>${index + 1}. ${icon} ${file.name}</span>
+                    <span class="badge">${(file.size / 1024 / 1024).toFixed(1)} MB</span>
+                `;
+                list.appendChild(li);
+            });
+
+            clearBtn.style.display = visualQueue.length > 0 ? 'block' : 'none';
+        }
+
+        function clearQueue() {
+            visualQueue = [];
+            renderQueueUI();
+        }
+
+        function handleAudio(input) {
+            const btn = document.getElementById('audioBtn');
+            if (input.files && input.files[0]) {
+                audioFile = input.files[0];
+                btn.innerHTML = `🎵 ${audioFile.name}`;
+                btn.classList.add('has-file');
             }
         }
 
-        function updateAudioCount() {
-            if(audioInput.files.length > 0) {
-                audioZone.innerText = "🎵 " + audioInput.files[0].name;
-                audioZone.style.borderColor = "#00ff9d";
-            }
-        }
-
-        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            if(fileInput.files.length === 0) {
-                alert("Please select visual files first!");
+        async function submitJob() {
+            if (visualQueue.length === 0) {
+                alert("Please add at least one video or image first.");
                 return;
             }
 
-            const btn = document.getElementById('submitBtn');
-            const status = document.getElementById('status');
+            const btn = document.getElementById('renderBtn');
+            const btnText = document.getElementById('btnText');
             const loader = document.getElementById('loader');
-            const dlArea = document.getElementById('download-area');
+            const status = document.getElementById('status');
+            const successBox = document.getElementById('successBox');
 
-            dlArea.style.display = 'none';
+            // UI Loading State
             btn.disabled = true;
-            btn.innerText = "Processing...";
-            loader.style.display = 'block';
-            status.innerText = "Uploading & Rendering...";
+            btnText.innerText = " PROCESSING...";
+            loader.style.display = "block";
+            successBox.style.display = "none";
+            status.innerText = "Uploading files & Rendering on Server...";
 
             const formData = new FormData();
-            
-            // Append Visuals
-            for (let i = 0; i < fileInput.files.length; i++) {
-                formData.append('files', fileInput.files[i]);
-            }
-            
-            // Append Audio (if exists)
-            if (audioInput.files.length > 0) {
-                formData.append('audio_file', audioInput.files[0]);
+
+            // 1. Append Visuals (Order is preserved by array order)
+            visualQueue.forEach(file => {
+                formData.append('files', file);
+            });
+
+            // 2. Append Audio
+            if (audioFile) {
+                formData.append('audio_file', audioFile);
             }
 
+            // 3. Append Settings
             formData.append('transition', document.getElementById('transition').value);
 
             try {
@@ -81,20 +262,25 @@
                     body: formData
                 });
 
-                if (!response.ok) throw new Error("Server Error (Check HF Logs)");
+                if (!response.ok) {
+                    throw new Error("Server Error. Check file sizes or format.");
+                }
 
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
                 
-                document.getElementById('download-link').href = url;
-                dlArea.style.display = 'block';
+                document.getElementById('downloadLink').href = url;
+                successBox.style.display = "block";
                 status.innerText = "";
+                
             } catch (error) {
                 status.innerText = "Error: " + error.message;
             } finally {
                 btn.disabled = false;
-                btn.innerText = "GENERATE VIDEO";
-                loader.style.display = 'none';
+                btnText.innerText = "GENERATE SHORT";
+                loader.style.display = "none";
             }
-        });
+        }
     </script>
+</body>
+</html>
