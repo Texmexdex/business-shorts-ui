@@ -1,52 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Business Shorts Generator</title>
-    <style>
-        :root { --primary: #00ff9d; --bg: #121212; --card: #1e1e1e; }
-        body { background-color: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        
-        h1 { margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; }
-        p { color: #888; margin-bottom: 30px; }
-
-        .container { width: 100%; max-width: 500px; background: var(--card); padding: 25px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        
-        label { display: block; margin-bottom: 10px; font-weight: bold; color: #ccc; }
-        
-        /* Custom File Input */
-        .file-upload { border: 2px dashed #444; padding: 30px; text-align: center; border-radius: 12px; cursor: pointer; transition: 0.3s; margin-bottom: 20px; }
-        .file-upload:hover { border-color: var(--primary); background: #1a2a22; }
-        input[type="file"] { display: none; }
-        
-        select { width: 100%; padding: 15px; background: #333; color: white; border: none; border-radius: 8px; margin-bottom: 20px; font-size: 16px; }
-        
-        button { width: 100%; padding: 18px; background: var(--primary); color: #000; font-weight: 900; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
-        button:disabled { background: #555; cursor: not-allowed; }
-        
-        #status { margin-top: 20px; text-align: center; font-weight: bold; }
-        #download-area { display: none; margin-top: 20px; text-align: center; }
-        .d-btn { display: inline-block; padding: 15px 30px; background: white; color: black; text-decoration: none; border-radius: 30px; font-weight: bold; }
-
-        .loader { border: 4px solid #333; border-top: 4px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto; display: none; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
-</head>
-<body>
-
-    <h1>AutoShorts</h1>
-    <p>Professional Business Video Automation</p>
-
-    <div class="container">
-        <form id="uploadForm">
-            <label>1. Upload Media (Order Matters)</label>
+<form id="uploadForm">
+            <label>1. Upload Visuals (Order Matters)</label>
             <label for="files" class="file-upload" id="drop-zone">
                 Tap to Select Images/Videos
             </label>
             <input type="file" id="files" multiple accept="image/*,video/*" onchange="updateCount()">
             
-            <label>2. Transition Style</label>
+            <label>2. Background Audio (Optional)</label>
+            <label for="audio" class="file-upload" id="audio-zone" style="padding: 15px; margin-bottom: 20px;">
+                Tap to Select Music/Voiceover
+            </label>
+            <input type="file" id="audio" accept="audio/*" onchange="updateAudioCount()">
+
+            <label>3. Transition Style</label>
             <select id="transition">
                 <option value="Split">Barn Door Split (Sleek)</option>
                 <option value="Cut">Hard Cut</option>
@@ -55,26 +20,25 @@
             <button type="submit" id="submitBtn">Generate Video</button>
         </form>
 
-        <div id="status"></div>
-        <div class="loader" id="loader"></div>
-
-        <div id="download-area">
-            <p>✅ Video Generated Successfully!</p>
-            <a id="download-link" class="d-btn" href="#" download="my_short.mp4">Download .MP4</a>
-        </div>
-    </div>
-
-    <script>
-        // UPDATED: Correct Direct API URL based on your Hugging Face space
+<script>
         const API_URL = "https://texmexdex-auto-shorts.hf.space/render"; 
 
         const fileInput = document.getElementById('files');
+        const audioInput = document.getElementById('audio');
         const dropZone = document.getElementById('drop-zone');
+        const audioZone = document.getElementById('audio-zone');
 
         function updateCount() {
             if(fileInput.files.length > 0) {
-                dropZone.innerText = fileInput.files.length + " files selected";
+                dropZone.innerText = fileInput.files.length + " visuals selected";
                 dropZone.style.borderColor = "#00ff9d";
+            }
+        }
+
+        function updateAudioCount() {
+            if(audioInput.files.length > 0) {
+                audioZone.innerText = "🎵 " + audioInput.files[0].name;
+                audioZone.style.borderColor = "#00ff9d";
             }
         }
 
@@ -82,7 +46,7 @@
             e.preventDefault();
             
             if(fileInput.files.length === 0) {
-                alert("Please select files first!");
+                alert("Please select visual files first!");
                 return;
             }
 
@@ -91,17 +55,24 @@
             const loader = document.getElementById('loader');
             const dlArea = document.getElementById('download-area');
 
-            // Reset UI
             dlArea.style.display = 'none';
             btn.disabled = true;
             btn.innerText = "Processing...";
             loader.style.display = 'block';
-            status.innerText = "Uploading & Rendering... (This may take 1-2 mins)";
+            status.innerText = "Uploading & Rendering...";
 
             const formData = new FormData();
+            
+            // Append Visuals
             for (let i = 0; i < fileInput.files.length; i++) {
                 formData.append('files', fileInput.files[i]);
             }
+            
+            // Append Audio (if exists)
+            if (audioInput.files.length > 0) {
+                formData.append('audio_file', audioInput.files[0]);
+            }
+
             formData.append('transition', document.getElementById('transition').value);
 
             try {
@@ -127,5 +98,3 @@
             }
         });
     </script>
-</body>
-</html>
