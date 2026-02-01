@@ -3,48 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AUTOSHORTS | PRO</title>
+    <title>AUTOSHORTS | STUDIO</title>
     <style>
         :root { 
-            --bg: #050505; 
-            --panel: #111111; 
-            --border: #333333; 
+            --panel: rgba(10, 10, 10, 0.85); /* Semi-transparent for background visibility */
+            --border: rgba(255, 255, 255, 0.15); 
             --text-main: #e0e0e0; 
-            --text-dim: #666666; 
+            --text-dim: #888; 
             --accent: #ffffff; 
-            --error: #cf6679;
         }
         
         body { 
-            background-color: var(--bg); 
+            background-color: #000; 
             color: var(--text-main); 
-            font-family: 'Helvetica Neue', Arial, sans-serif; 
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
             margin: 0; 
-            padding: 40px 20px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            min-height: 100vh;
-            letter-spacing: 0.5px;
+            padding: 0; 
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; /* Prevent scroll bars */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        
+
+        /* --- THE SHADER BACKGROUND --- */
+        #gl-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* --- THE INTERFACE --- */
         .interface { 
             width: 100%; 
-            max-width: 600px; 
+            max-width: 550px; 
             border: 1px solid var(--border); 
             background: var(--panel);
+            backdrop-filter: blur(20px); /* The "Frosted Glass" Luxury Effect */
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 40px 80px rgba(0,0,0,0.8);
+            z-index: 10;
         }
 
         /* HEADER */
         header {
-            padding: 20px;
+            padding: 25px;
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        h1 { margin: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; color: var(--accent); }
-        .status-dot { height: 8px; width: 8px; background-color: #333; border-radius: 50%; display: inline-block; }
+        h1 { margin: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 3px; font-weight: 700; color: var(--accent); }
+        .status-dot { height: 6px; width: 6px; background-color: #444; border-radius: 50%; display: inline-block; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
         .status-dot.active { background-color: var(--accent); box-shadow: 0 0 10px var(--accent); }
 
         /* SECTIONS */
@@ -52,86 +67,83 @@
         .section:last-child { border-bottom: none; }
         
         .section-header {
-            padding: 15px 20px;
-            font-size: 11px;
+            padding: 15px 25px;
+            font-size: 10px;
             text-transform: uppercase;
+            letter-spacing: 1px;
             color: var(--text-dim);
             font-weight: 600;
-            background: #0a0a0a;
-            border-bottom: 1px solid #222;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
         }
 
         /* CONTROLS */
-        .control-row { padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .control-row { padding: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         
         button {
             background: transparent;
             border: 1px solid var(--border);
             color: var(--text-main);
-            padding: 15px;
-            font-size: 12px;
+            padding: 18px;
+            font-size: 11px;
             text-transform: uppercase;
+            letter-spacing: 1px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
             text-align: center;
         }
-        button:hover { border-color: var(--accent); color: var(--accent); }
+        button:hover { border-color: var(--accent); color: var(--accent); background: rgba(255,255,255,0.05); }
         button:active { background: var(--accent); color: black; }
-        button:disabled { border-color: #222; color: #444; cursor: not-allowed; }
+        button:disabled { border-color: #333; color: #555; cursor: not-allowed; }
 
         .btn-primary { background: var(--accent); color: black; border: none; width: 100%; }
-        .btn-primary:hover { background: #ddd; }
+        .btn-primary:hover { background: #ccc; }
         
         input[type="file"] { display: none; }
         
         select {
             width: 100%;
-            padding: 15px;
-            background: #0a0a0a;
+            padding: 18px;
+            background: rgba(0,0,0,0.5);
             border: 1px solid var(--border);
             color: var(--text-main);
             border-radius: 0;
-            font-size: 12px;
+            font-size: 11px;
             text-transform: uppercase;
+            letter-spacing: 1px;
             appearance: none;
             cursor: pointer;
+            outline: none;
         }
-        select:focus { outline: 1px solid var(--accent); }
+        select:hover { border-color: #666; }
 
-        /* QUEUE LIST */
-        .queue-list { list-style: none; padding: 0; margin: 0; }
+        /* LISTS */
+        .queue-list { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; }
         .queue-item {
-            padding: 15px 20px;
-            border-bottom: 1px solid #222;
-            font-size: 13px;
+            padding: 15px 25px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            color: #ccc;
         }
         .queue-item:last-child { border-bottom: none; }
-        .queue-meta { font-family: 'Courier New', monospace; font-size: 11px; color: var(--text-dim); }
-
-        /* AUDIO BAR */
-        .audio-bar {
-            padding: 15px 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            font-size: 12px;
-        }
-        .audio-indicator { width: 4px; height: 15px; background: #333; }
-        .audio-indicator.active { background: var(--accent); }
+        .queue-meta { font-family: monospace; font-size: 10px; color: #555; }
 
         /* OUTPUT */
-        #output-area { display: none; padding: 20px; text-align: center; background: #0f0f0f; }
-        .d-link { color: var(--text-main); text-decoration: none; border-bottom: 1px solid var(--accent); padding-bottom: 2px; font-size: 12px; text-transform: uppercase; }
+        #output-area { display: none; padding: 25px; text-align: center; background: rgba(0,0,0,0.5); }
+        .d-link { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent); padding-bottom: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; transition: 0.2s; }
+        .d-link:hover { opacity: 0.8; }
 
     </style>
 </head>
 <body>
+
+    <canvas id="gl-canvas"></canvas>
 
     <div class="interface">
         <header>
@@ -145,50 +157,50 @@
                 <span id="count-display">0 CLIPS</span>
             </div>
             <ul class="queue-list" id="queueList">
-                <li class="queue-item" style="color: #444; justify-content: center; font-style: italic;">
-                    No media selected
+                <li class="queue-item" style="color: #666; justify-content: center; font-style: italic;">
+                    Sequence Empty
                 </li>
             </ul>
             <div class="control-row" style="grid-template-columns: 1fr auto;">
-                <button onclick="document.getElementById('vidInput').click()">+ Append Clip</button>
-                <button onclick="clearQueue()" style="border-color: #332222; color: #884444;">Reset</button>
+                <button onclick="document.getElementById('vidInput').click()">+ Append Media</button>
+                <button onclick="clearQueue()" style="border-color: #522; color: #d66;">Reset</button>
             </div>
             <input type="file" id="vidInput" accept="image/*,video/*" onchange="addVisual(this)">
         </div>
 
         <div class="section">
             <div class="section-header">02. Audio Track</div>
-            <div class="audio-bar">
-                <div class="audio-indicator" id="audio-dot"></div>
-                <span id="audio-name" style="color: #666;">NO AUDIO SOURCE</span>
-                <button onclick="document.getElementById('audInput').click()" style="margin-left: auto; padding: 8px 15px;">Select File</button>
+            <div style="padding: 25px; display: flex; align-items: center; gap: 15px;">
+                <div style="width: 4px; height: 15px; background: #333;" id="audio-dot"></div>
+                <span id="audio-name" style="font-size: 11px; color: #666; letter-spacing: 1px;">NO AUDIO SOURCE</span>
+                <button onclick="document.getElementById('audInput').click()" style="margin-left: auto; padding: 10px 20px;">Select File</button>
             </div>
             <input type="file" id="audInput" accept="audio/*" onchange="setAudio(this)">
         </div>
 
         <div class="section">
-            <div class="section-header">03. Rendering Parameters</div>
+            <div class="section-header">03. Parameters</div>
             <div class="control-row">
                 <select id="transition">
-                    <option value="Split_BarnDoor">Split: Barn Door (H)</option>
-                    <option value="Split_Quad">Split: Quad Grid</option>
-                    <option value="Split_Diagonal">Split: Diagonal Slice</option>
-                    <option value="Cellular_Growth">Mask: Cellular Growth</option>
-                    <option value="Dissolve_Luma">Mask: Luma Fade</option>
-                    <option value="Slide_Push">Slide: Kinetic Push</option>
+                    <option value="Split_BarnDoor">Barn Door Split</option>
+                    <option value="Split_Quad">Quad Grid Split</option>
+                    <option value="Split_Diagonal">Diagonal Slice</option>
+                    <option value="Cellular_Growth">Cellular Growth</option>
+                    <option value="Dissolve_Luma">Luma Fade</option>
+                    <option value="Slide_Push">Kinetic Push</option>
                 </select>
-                <button class="btn-primary" id="renderBtn" onclick="processJob()">INITIATE RENDER</button>
+                <button class="btn-primary" id="renderBtn" onclick="processJob()">RENDER</button>
             </div>
         </div>
         
         <div id="output-area">
-            <p id="status-text" style="font-size: 11px; margin-bottom: 15px; color: #666;">PROCESSING...</p>
-            <a id="dl-link" class="d-link" href="#" download>Download Final_Render.mp4</a>
+            <p id="status-text" style="font-size: 10px; margin-bottom: 20px; color: #888; text-transform: uppercase; letter-spacing: 1px;">INITIALIZING...</p>
+            <a id="dl-link" class="d-link" href="#" download>Download Result</a>
         </div>
     </div>
 
     <script>
-        const API_URL = "https://texmexdex-auto-shorts.hf.space/render"; // VERIFY THIS URL
+        const API_URL = "https://texmexdex-auto-shorts.hf.space/render"; // Direct API Link
         
         let visualQueue = [];
         let audioFile = null;
@@ -207,7 +219,7 @@
             list.innerHTML = "";
             
             if(visualQueue.length === 0) {
-                list.innerHTML = '<li class="queue-item" style="color:#444; justify-content:center;">No media selected</li>';
+                list.innerHTML = '<li class="queue-item" style="color:#666; justify-content:center;">Sequence Empty</li>';
             } else {
                 visualQueue.forEach((file, i) => {
                     const li = document.createElement('li');
@@ -225,9 +237,11 @@
         function setAudio(input) {
             if(input.files[0]) {
                 audioFile = input.files[0];
-                document.getElementById('audio-name').innerText = audioFile.name.toUpperCase();
-                document.getElementById('audio-name').style.color = "#e0e0e0";
-                document.getElementById('audio-dot').classList.add('active');
+                const nameDisplay = document.getElementById('audio-name');
+                nameDisplay.innerText = audioFile.name.toUpperCase();
+                nameDisplay.style.color = "#e0e0e0";
+                document.getElementById('audio-dot').style.background = "#fff";
+                document.getElementById('audio-dot').style.boxShadow = "0 0 10px #fff";
             }
         }
 
@@ -237,7 +251,7 @@
         }
 
         async function processJob() {
-            if(visualQueue.length < 1) return alert("SEQUENCE EMPTY");
+            if(visualQueue.length < 1) return alert("Please add visual media first.");
 
             const btn = document.getElementById('renderBtn');
             const out = document.getElementById('output-area');
@@ -245,10 +259,10 @@
             const link = document.getElementById('dl-link');
 
             btn.disabled = true;
-            btn.innerText = "RENDERING...";
+            btn.innerText = "PROCESSING...";
             out.style.display = "block";
             link.style.display = "none";
-            status.innerText = "UPLOADING ASSETS & PROCESSING...";
+            status.innerText = "UPLOADING ASSETS to CLOUD ENGINE...";
 
             const formData = new FormData();
             visualQueue.forEach(f => formData.append('files', f));
@@ -257,18 +271,112 @@
 
             try {
                 const res = await fetch(API_URL, { method: 'POST', body: formData });
-                if(!res.ok) throw new Error("RENDER FAILED");
+                if(!res.ok) throw new Error("Server Error. Check file sizes.");
                 
+                status.innerText = "RENDERING...";
                 const blob = await res.blob();
                 link.href = window.URL.createObjectURL(blob);
                 link.style.display = "inline";
-                status.innerText = "RENDER COMPLETE";
+                status.innerText = "COMPLETED SUCCESSFULLY";
             } catch (e) {
                 status.innerText = "ERROR: " + e.message;
             } finally {
                 btn.disabled = false;
-                btn.innerText = "INITIATE RENDER";
+                btn.innerText = "RENDER";
             }
+        }
+
+        // --- CHECK SERVER STATUS ---
+        fetch(API_URL.replace("/render", "/"))
+            .then(r => { if(r.ok) document.getElementById('server-status').classList.add('active'); })
+            .catch(e => console.log("Server waking up..."));
+    </script>
+
+    <script type="module">
+        import { Renderer, Program, Mesh, Triangle, Vec2 } from 'https://cdn.jsdelivr.net/npm/ogl@0.0.32/dist/ogl.mjs';
+
+        const vertex = `attribute vec2 position; void main(){gl_Position=vec4(position,0.0,1.0);}`;
+
+        const fragment = `
+        #ifdef GL_ES
+        precision highp float;
+        #endif
+        uniform vec2 uResolution;
+        uniform float uTime;
+        
+        vec4 buf[8];
+        vec4 sigmoid(vec4 x){return 1./(1.+exp(-x));}
+
+        vec4 cppn_fn(vec2 coordinate, float in0, float in1, float in2){
+            // Initialize inputs
+            buf[6]=vec4(coordinate.x, coordinate.y, 0.3948 + in0, 0.36 + in1);
+            buf[7]=vec4(0.14 + in2, length(coordinate), 0., 0.);
+
+            // Layer 1
+            buf[0]=mat4(vec4(6.5,-3.6,0.7,-1.1), vec4(2.4,3.1,1.2,0.06), vec4(-5.4,-6.1,1.8,-4.7), vec4(6.0,-5.5,-0.9,3.2))*buf[6] + vec4(0.2,1.1,-1.7,5.0);
+            buf[1]=mat4(vec4(-3.3,-6.0,0.5,-4.4), vec4(0.8,1.7,5.6,1.6), vec4(2.4,-3.5,1.7,6.3), vec4(3.3,8.2,1.1,-1.1))*buf[6] + vec4(-5.9,-6.5,-0.8,1.5);
+            buf[0]=sigmoid(buf[0]); buf[1]=sigmoid(buf[1]);
+
+            // Layer 2 (Simplified from original for performance/syntax safety in Vanilla)
+            buf[2] = buf[0] * vec4(1.5) - buf[1] * vec4(0.5);
+            buf[3] = buf[1].wxyz * vec4(1.2) + buf[0].zwxy;
+            buf[2]=sigmoid(buf[2]); buf[3]=sigmoid(buf[3]);
+
+            // Layer 3 (Complex mixing)
+            buf[4] = buf[2] * sin(uTime * 0.2) + buf[3] * cos(uTime * 0.1);
+            buf[5] = buf[3] * vec4(2.0) - buf[2] * vec4(1.0);
+            
+            // Output mapping
+            vec3 color = 0.5 + 0.5 * cos(uTime + buf[4].xyz + vec3(0,2,4));
+            return vec4(color, 1.0);
+        }
+
+        void mainImage(out vec4 fragColor, in vec2 fragCoord){
+            vec2 uv = fragCoord/uResolution.xy * 2.0 - 1.0;
+            uv.y *= -1.0;
+            // Slight warp
+            uv += vec2(sin(uv.y*3.0+uTime*0.5), cos(uv.x*3.0+uTime*0.5))*0.05;
+            
+            fragColor = cppn_fn(uv, 0.1*sin(0.3*uTime), 0.1*sin(0.7*uTime), 0.1*sin(0.4*uTime));
+            
+            // Vignette for Dark Veil feel
+            float vig = 1.0 - length(uv * 0.5);
+            fragColor.rgb *= vig * 0.6; 
+        }
+
+        void main(){
+            mainImage(gl_FragColor, gl_FragCoord.xy);
+        }
+        `;
+
+        const canvas = document.getElementById('gl-canvas');
+        const renderer = new Renderer({ dpr: 1, canvas: canvas, alpha: false });
+        const gl = renderer.gl;
+        const geometry = new Triangle(gl);
+
+        const program = new Program(gl, {
+            vertex,
+            fragment,
+            uniforms: {
+                uTime: { value: 0 },
+                uResolution: { value: new Vec2() },
+            },
+        });
+
+        const mesh = new Mesh(gl, { geometry, program });
+
+        function resize() {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            program.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+        }
+        window.addEventListener('resize', resize, false);
+        resize();
+
+        requestAnimationFrame(update);
+        function update(t) {
+            requestAnimationFrame(update);
+            program.uniforms.uTime.value = t * 0.0005; // Speed
+            renderer.render({ scene: mesh });
         }
     </script>
 </body>
